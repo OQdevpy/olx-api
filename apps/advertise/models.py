@@ -21,11 +21,15 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+CATEGORY = [
+    ["elektronika","elektronika"],
+    ["maishiy","maishiy"],
+]
 
 class Advertise(models.Model):
     title = models.CharField(max_length=100)
     owner = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="advertise")
-    category = models.ForeignKey(Category,on_delete=models.CASCADE, related_name="advertise")
+    category = models.CharField(max_length=100, choices = CATEGORY)
     # location = models.CharField(max_length= 200, choices = LOCATIONS)
     description = models.TextField(max_length=600)
     price = models.FloatField(max_length=100)

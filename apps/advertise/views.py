@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.decorators import permission_classes
+
+from apps.accounts.api.v1.permissions import IsStudent
 from .models import *
 from .serializers import *
 from django.db.models import Q
@@ -15,17 +17,18 @@ from django.conf import settings
 # import stripe
 from django.views.decorators.csrf import csrf_exempt
 
-User = get_user_model()
+
 # stripe.api_key = settings.STRIPE_SECRET_KEY
 
 class AdvertisesListView(APIView):
+    # permission_classes = [IsStudent,]
     def get(self, request):
         advertises = Advertise.objects.filter(Q (expiration_date__gt = Now())).order_by('-is_active').values()
         serializer = AdvertiseSerializer(advertises, many=True)
         return Response(serializer.data, status = status.HTTP_200_OK)
 
 class AdvertiseCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,]
     def post(self, request):
         serializer = AdvertiseSerializer(data=request.data)
         user = request.user
@@ -37,7 +40,7 @@ class AdvertiseCreateView(APIView):
 
 
 class AdvertisePkView(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly,]
     def get_object(self, id):
         try:
             return Advertise.objects.get(id=id)
@@ -65,23 +68,28 @@ class AdvertisePkView(APIView):
 
 
 class UserAdvertisesView(APIView):
+    # permission_classes = [IsStudent,]
     
     def get(self, request, user_id):
-        user = User.objects.get(pk = user_id)
+        user = Account.objects.get(pk = user_id)
         user_advertises = Advertise.objects.all().filter(owner = user)
         serializer = AdvertiseSerializer(user_advertises, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UserAdvertiseDetatilView(APIView):
+    # permission_classes = [IsStudent,]
+
     def get(self, request, user_id, ad_id):
-        user = User.objects.get(pk = user_id)
+        user = Account.objects.get(pk = user_id)
         user_advertises = Advertise.objects.all().filter(owner = user).filter(id = ad_id)
         serializer = AdvertiseSerializer(user_advertises, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class StripeCheckoutView(APIView):
+    # permission_classes = [IsStudent,]
+
     def post(self, request, *args, **kwargs):
         adv_id = self.kwargs["pk"]
         adv = Advertise.objects.get(id = adv_id)
